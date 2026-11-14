@@ -1,0 +1,6 @@
+ID     | Command line              | Date and time    | Action(s)      | Altered
+--------------------------------------------------------------------------------
+     4 | install -y dnf-plugins-co | 2026-11-14 18:54 | Install        |   14   
+     3 | install -y nginx libcap-n | 2026-11-14 18:53 | Install        |    9   
+     2 | upgrade --refresh -y      | 2026-11-14 18:52 | I, O, U        |  182 E<
+     1 |                           | 2026-11-14 17:23 | Install        |  555 >E

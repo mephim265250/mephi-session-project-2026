@@ -1,0 +1,165 @@
+    1  shopt -s histappend
+    2  HISTSIZE=10000; HISTFILESIZE=20000; unset HISTCONTROL HISTIGNORE
+    3  hostnamectl --static
+    4  nmcli -f NAME,DEVICE connection show --active
+    5  nmcli -f NAME,DEVICE connection show --active
+    6  nmcli -f connection.id,connection.autoconnect,ipv4.method,ipv6.method connection show enp6s18
+    7  nmcli -f connection.id,connection.autoconnect,ipv4.method,ipv6.method connection show enp6s18
+    8  nmcli connection modify enp6s18 ipv6.method disabled
+    9  nmcli connection up enp6s18
+   10  nmcli -f ipv4.method,ipv6.method connection show enp6s18
+   11  nmcli -f ipv4.method,ipv6.method connection show enp6s18
+   12  ping -c 4 8.8.8.8 > ~/ping.out
+   13  cat ~/ping.out
+   14  dnf upgrade --refresh -y
+   15  dnf install -y nginx libcap-ng-utils
+   16  dnf install -y dnf-plugins-core acl policycoreutils-python-utils parted e2fsprogs curl git libpwquality libcap
+   17  dnf download --arch=x86_64 --resolve --destdir /tmp tcpdump
+   18  rpmkeys --checksig /tmp/tcpdump-4.99.5-1.red80.x86_64.rpm
+   19  rpm -ivh /tmp/tcpdump-4.99.5-1.red80.x86_64.rpm
+   20  history -a
+   21  sysyemctl enable --now serial-getty@S0.service serial-getty@ttyS1.service
+   22  systemctl enable --now serial-getty@ttyS0.service serial-getty@ttyS1.service
+   23  reboot
+   24  exit
+   25  uname -r
+   26  lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,SERIAL
+   27  parted -s /dev/sdb mklabel gpt mkpart primary ext4 1MiB 100%
+   28  mkfs.ext4 -L MEPHI_WEB /dev/sdb1
+   29  lsblk -f /dev/sdb
+   30  mkdir -p /mephi-web
+   31  printf '\nLABEL=MEPHI_WEB /mephi-web ext4 defaults,nodev,nosuid,noexec 0 2\n' >> /etc/fstab
+   32  systemctl daemon-reload
+   33  mount /mephi-web
+   34  findmnt /mephi-web
+   35  mkdir -p /etc/systemd/system/nginx.service.d
+   36  printf '[Unit]\nRequiresMountsFor=/mephi-web\n' > /etc/systemd/system/nginx.service.d/mephi-web.conf
+   37  systemctl daemon-reload
+   38  systemctl enable --now nginx
+   39  systemctl status nginx --no-pager -l
+   40  nginx -T
+   41  nginx -T 2>&1 | less
+   42  cp -p /etc/nginx/nginx.conf /root/nginx.conf.before-mephi
+   43  sed -i '/^[[:space:]]*root[[:space:]]/s@/usr/share/nginx/html@/mephi-web@' /etc/nginx/nginx.conf
+   44  nginx -t
+   45  getenforce
+   46  semanage fcontext -a -t httpd_sys_content_t '/mephi-web(/.*)?'
+   47  restorecon -Rv /mephi-web
+   48  ls -Zd /mephi-web
+   49  chmod 755 /mephi-web
+   50  printf '%s\n' 'Hello from Student: M265250' > /mephi-web/index.html
+   51  chmod 644 /mephi-web/index.html
+   52  restorecon -v /mephi-web/index.html
+   53  systemctl reload nginx
+   54  curl http://localhost/
+   55  clear
+   56  curl http://localhost/
+   57  curl http://localhost/ > ~/curl.out
+   58  cat /etc/pam.d/passwd
+   59  grep -n 'pam_pwquality' /etc/pam.d/system-auth /etc/pam.d/password-auth
+   60  authselect current
+   61  chage -l root
+   62  cp -p /etc/security/pwquality.conf /root/pwquality.conf.before-mephi
+   63  sed -i -E '/^[[:space:]]*(minlen|dcredit|ucredit|lcredit|ocredit|enforcing|enforce_for_root)([[:space:]=]|$)/d' /etc/security/pwquality.conf
+   64  printf '\nminlen = 12\ndcredit = 0\nucredit = 0\nlcredit = 0\nocredit = 0\nenforcing = 1\nenforce_for_root\n' >> /etc/security/pwquality.conf
+   65  grep -nE '^[[:space:]]*[^#[:space:]]' /etc/security/pwquality.conf
+   66  passwd root
+   67  history -a
+   68  chage -M 90 root
+   69  chage -l root
+   70  cp -p /etc/login.defs /root/login.defs.before-mephi
+   71  sed -i -E 's/^[[:space:]]*PASS_MAX_DAYS[[:space:]]+.*/PASS_MAX_DAYS   90/' /etc/login.defs
+   72  grep -nE '^[[:space:]]*PASS_MAX_DAYS[[:space:]]+' /etc/login.defs
+   73  groupadd developers
+   74  groupadd -g 4444 curators
+   75  useradd -m -u 5501 -g developers -s /bin/bash user1
+   76  useradd -m -u 5502 -g developers -s /bin/bash user2
+   77  useradd -m -u 5503 -g developers -s /bin/bash user3
+   78  useradd -m -g curators -s /bin/bash curator1
+   79  useradd -m -g curators -s /bin/bash curator2
+   80  getent passwd user1 user2 user3 curator1 curator2
+   81  getent group developers curators
+   82  passwd user1
+   83  passwd user2
+   84  passwd 
+   85  passwd user1
+   86  passwd curator1
+   87  passwd curator2
+   88  mkdir -p /data/mephi-2026
+   89  chown root:developers /data/mephi-2026
+   90  chmod 2770 /data/mephi-2026
+   91  setfacl -m u::rwx,g::rwx,g:curators:r-x,m::rwx,o::--- /data/mephi-2026
+   92  setfacl -d -m u::rwx,g::rwx,g:curators:r-x,m::rwx,o::--- /data/mephi-2026
+   93  getfacl /data/mephi-2026
+   94  su - user1 -c 'printf "%s\n" "created by user1" > /data/mephi-2026/user1.txt'
+   95  su - user2 -c 'printf "%s\n" "created by user2" > /data/mephi-2026/user2.txt'
+   96  su - user3 -c 'printf "%s\n" "created by user3" > /data/mephi-2026/user3.txt'
+   97  su - user1 -c 'for f in /data/mephi-2026/user2.txt /data/mephi-2026/user3.txt; do cat "$f" && printf "%s\n" "written by user1" >> "$f" || exit 1; done'
+   98  su - user2 -c 'for f in /data/mephi-2026/user1.txt /data/mephi-2026/user3.txt; do cat "$f" && printf "%s\n" "written by user2" >> "$f" || exit 1; done'
+   99  su - user3 -c 'for f in /data/mephi-2026/user1.txt /data/mephi-2026/user2.txt; do cat "$f" && printf "%s\n" "written by user3" >> "$f" || exit 1; done'
+  100  su - curator1 -c 'cat /data/mephi-2026/user1.txt /data/mephi-2026/user2.txt /data/mephi-2026/user3.txt'
+  101  su - curator2 -c 'cat /data/mephi-2026/user1.txt /data/mephi-2026/user2.txt /data/mephi-2026/user3.txt'
+  102  su - curator1 -c 'printf "%s\n" "curator1 write test" >> /data/mephi-2026/user1.txt'
+  103  su - curator2 -c 'printf "%s\n" "curator2 write test" >> /data/mephi-2026/user2.txt'
+  104  su - curator1 -c 'cat /data/mephi-2026/user[123].txt'
+  105  su - curator2 -c 'cat /data/mephi-2026/user[123].txt'
+  106  runuser -u nobody -- cat /data/mephi-2026/user1.txt
+  107  su - user1 -c 'mkdir /data/mephi-2026/shared && printf "%s\n" "created by user1" > /data/mephi-2026/shared/inherited.txt'
+  108  su - user2 -c 'printf "%s\n" "written by user2" >> /data/mephi-2026/shared/inherited.txt'
+  109  su - curator1 -c 'cat /data/mephi-2026/shared/inherited.txt'
+  110  su - curator1 -c 'printf "%s\n" "curator write test" >> /data/mephi-2026/shared/inherited.txt'
+  111  groupadd --system mephi-capture
+  112  usermod -aG mephi-capture user1
+  113  chown root:mephi-capture /usr/sbin/tcpdump
+  114  chmod 0750 /usr/sbin/tcpdump
+  115  setcap cap_net_raw=ep /usr/sbin/tcpdump
+  116  ls -l /usr/sbin/tcpdump
+  117  getcap /usr/sbin/tcpdump
+  118  id user1
+  119  ip -4 -br address show dev enp6s18
+  120  timeout 30s su - user1 -c '/usr/sbin/tcpdump -p -i enp6s18 -nn -c 4 icmp'
+  121  timeout 180s su - user1 -c '/usr/sbin/tcpdump -p -i enp6s18 -nn -c 4 icmp'
+  122  getcap /usr/sbin/tcpdump > ~/getcap.out
+  123  cat /etc/pam.d/login
+  124  cp -p /etc/pam.d/login /root/login.pam.before-mephi
+  125  printf '%s\n' '-:(curators):ALL' '+:ALL:ALL' > /etc/security/mephi-console-access.conf
+  126  sed -i '/^account[[:space:]]*required[[:space:]]*pam_nologin\.so/i account    required     pam_access.so accessfile=/etc/security/mephi-console-access.conf' /etc/pam.d/login
+  127  restorecon -v /etc/pam.d/login /etc/security/mephi-console-access.conf
+  128  cat /etc/security/mephi-console-access.conf
+  129  cat /etc/pam.d/login
+  130  history -a
+  131  reboot
+  132  findmnt /mephi-web
+  133  systemctl is-enabled nginx
+  134  systemctl is-active nginx
+  135  getenforce
+  136  getcap /usr/sbin/tcpdump
+  137  curl http://localhost/
+  138  ping -c 4 8.8.8.8 > ~/ping.out
+  139  stat /data/mephi-2026 > ~/stat.out
+  140  stat /mephi-web >> ~/stat.out
+  141  getcap /usr/sbin/tcpdump > ~/getcap.out
+  142  dnf history > ~/dnf.out
+  143  journalctl -u nginx -b > ~/journalctl.out
+  144  getenforce > ~/getenforce.out
+  145  curl http://localhost/ > ~/curl.out
+  146  mkdir -p -m 700 /root/mephi-session-project-2026
+  147  cp /etc/fstab /etc/passwd /etc/shadow /etc/group /etc/security/pwquality.conf /root/mephi-session-project-2026/
+  148  chmod 600 /root/mephi-session-project-2026/fstab /root/mephi-session-project-2026/passwd /root/mephi-session-project-2026/shadow /root/mephi-session-project-2026/group /root/mephi-session-project-2026/pwquality.conf
+  149  cp /root/ping.out /root/stat.out /root/getcap.out /root/dnf.out /root/journalctl.out /root/getenforce.out /root/curl.out /root/mephi-session-project-2026/
+  150  history > /root/history.out
+  151  cp /root/history.out /root/mephi-session-project-2026/
+  152  ls -lh /root/mephi-session-project-2026/
+  153  systemctl is-active sshd
+  154  cp -r /root/mephi-session-project-2026 /home/user1/
+  155  chown -R user1:developers /home/user1/mephi-session-project-2026
+  156  chmod 700 /home/user1/mephi-session-project-2026
+  157  chmod 600 /home/user1/mephi-session-project-2026/*
+  158  sshd -T | grep -E '^(permitrootlogin|passwordauthentication|kbdinteractiveauthentication|usepam) '
+  159  passwd user1
+  160  passwd user2
+  161  passwd user3
+  162  passwd curator1
+  163  passwd curator2
+  164  install -m 600 /etc/shadow /root/mephi-session-project-2026/shadow
+  165  history > /root/history.out
